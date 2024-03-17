@@ -1,0 +1,21 @@
+
+Dynamic Programming Module Documentation
+========================================
+
+Introduction
+------------
+Dynamic programming is a method for solving complex problems by breaking them down into simpler subproblems. It is applicable where the problem can be divided into stages, with a decision required at each stage that will affect subsequent stages.
+
+Implementation
+--------------
+Techniques involve memoization or bottom-up approach to store results of subproblems to avoid recomputation.
+
+Use Cases
+---------
+- Calculating the nth Fibonacci number.
+- Finding the shortest path in a graph.
+
+Best Practices
+--------------
+- Identify if a problem has overlapping subproblems and optimal substructure to apply dynamic programming.
+- Use tabulation or memoization to store intermediate results.

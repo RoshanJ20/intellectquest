@@ -1,0 +1,20 @@
+
+Greedy Methodology Module Documentation
+=======================================
+
+Introduction
+------------
+The greedy methodology is an algorithmic paradigm that builds up a solution piece by piece, always choosing the next piece that offers the most immediate benefit.
+
+Implementation
+--------------
+Greedy algorithms are used in optimization problems, such as finding the minimum spanning tree (Kruskal’s and Prim’s algorithms) and in scheduling problems.
+
+Use Cases
+---------
+- Resource allocation problems.
+- Huffman coding for data compression.
+
+Best Practices
+--------------
+- Greedy algorithms are most effective when a local optimum is also a global optimum, so it's important to choose the right problems.

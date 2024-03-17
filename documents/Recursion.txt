@@ -1,0 +1,21 @@
+
+Recursion Module Documentation
+==============================
+
+Introduction
+------------
+Recursion is a method of solving problems where the solution to a problem depends on solutions to smaller instances of the same problem.
+
+Implementation
+--------------
+Recursion involves the concept of a base case and a recursive case. It is widely used in algorithms like sorting, searching, and tree traversals.
+
+Use Cases
+---------
+- Calculating factorials.
+- Fibonacci sequence.
+
+Best Practices
+--------------
+- Ensure the recursion has a base case.
+- Be aware of stack overflow issues with deep recursion.

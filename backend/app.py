@@ -9,27 +9,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-
-# def chat():
-#     data = request.json
-#     user_input = data.get('userInput')
-
-#     try:
-#         # Simplified OpenAI call for GPT-4
-#         response = client.completions.create(model="gpt-3.5-turbo-1106",  # Adjust model as needed
-#         prompt={user_input},
-#         max_tokens=150)
-
-#         # Assuming a single text response; adjust as necessary
-#         text_response = response.choices[0].text.strip()
-
-#         return jsonify({"message": text_response})
-#     except Exception as e:
-#         print(e)
-#         return jsonify({"error": "Error processing your request"}), 500
-
-
-
 import cohere
 
 co = cohere.Client(os.getenv('COHERE_API_KEY'))
