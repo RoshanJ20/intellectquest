@@ -12,28 +12,6 @@ Concepts and Definitions
 - **Index**: A unique integer assigned to each element in the array, representing its position. Indexing usually starts at 0.
 - **Length/Size**: The total number of elements an array can hold, which is determined at the time of its creation.
 
-Implementation
---------------
-Here's a simple implementation of an array in Python:
-
-```python
-# Creating an array of integers
-from array import array
-int_array = array('i', [1, 2, 3, 4, 5])
-
-# Accessing elements
-print(int_array[0])  # Output: 1
-print(int_array[3])  # Output: 4
-
-# Modifying elements
-int_array[2] = 10
-print(int_array[2])  # Output: 10
-
-# Iterating through the array
-for element in int_array:
-    print(element, end=' ')  # Output: 1 2 10 4 5 
-```
-
 Use Cases
 ----------
 Arrays are widely used in software development for various tasks, such as:

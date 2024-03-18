@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button"
 
 import React, { useState } from 'react';
 import { ResponsiveLine } from "@nivo/line";
+// import Notes from '../../app/NoteEditor/page'
+import {redirect} from 'next/navigation'
+import Link from "next/link";
+
 
 function TextIcon() {
   return (
@@ -61,6 +65,9 @@ export function Homepage() {
     setCurrentMessage('');
   };
 
+  const NoteEditor = () => {
+    redirect('/NoteEditor')
+  }
 
   return (
     <>
@@ -68,7 +75,10 @@ export function Homepage() {
         <h1 className="text-3xl font-bold dark:text-white">IntellectQuest</h1>
         <div className="flex space-x-4">
           <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            Modules
+            <Link href="/NoteEditor">Notes</Link>
+          </button>
+          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
+            <Link href="/modules">Modules</Link>
           </button>
           <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
             Quizzes
@@ -192,8 +202,6 @@ export function Homepage() {
     </>
   )
 }
-
-
 function CurvedlineChart(props) {
   return (
     <div {...props}>

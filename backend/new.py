@@ -7,7 +7,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
 import os, dotenv
 
-user_query = "When was Cohere started?"
+user_query = "What is a Linked List?"
 dotenv.load_dotenv()
 API_KEY_OK = os.getenv('COHERE_API_KEY')
 
@@ -15,24 +15,17 @@ API_KEY_OK = os.getenv('COHERE_API_KEY')
 cohere_chat_model = ChatCohere(cohere_api_key=API_KEY_OK)
 cohere_embeddings = CohereEmbeddings(cohere_api_key=API_KEY_OK)
 
-# Load text files and split into chunks, you can also use data gathered elsewhere in your application
-raw_documents = TextLoader('D:\code\shlokathon\intellectquest\\backend\\test.txt').load()
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-documents = text_splitter.split_documents(raw_documents)
+persist_directory = 'db'
 
-# Create a vector store from the documents
-db = Chroma.from_documents(documents, cohere_embeddings)
-input_docs = db.as_retriever().get_relevant_documents(user_query)
-print(input_docs)
+vectordb = Chroma(persist_directory=persist_directory, embedding_function=cohere_embeddings)
+input_docs = vectordb.as_retriever().get_relevant_documents(user_query)
 
-# Create the cohere rag retriever using the chat model 
 rag = CohereRagRetriever(llm=cohere_chat_model)
 docs = rag.get_relevant_documents(
     user_query,
     source_documents=input_docs,
 )
 # Print the documents
-print(docs)
 for doc in docs[:-1]:
     print(doc.metadata)
     print("\n\n" + doc.page_content)
