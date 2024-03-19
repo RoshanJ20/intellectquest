@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .content {
+            max-width: 800px;
+            margin-right: 20px;
+        }
+
+        .chart-container {
+            flex: 1; /* Fill available space */
+            margin-left: 20px;
+        }
+
+        canvas {
+            /* Adjust chart size as needed */
+            max-width: 400px;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h2>Results</h2>
+        <!-- Loop through questions and answers -->
+        {% for qa in questions %}
+        <div>
+            <p>{{ qa[0] }}</p>
+            <ul>
+                {% for option in qa[1] %}
+                <li>{{ option }}</li>
+                {% endfor %}
+            </ul>
+            <p>Correct Answer: {{ qa[2] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="chart-container">
+        <!-- Placeholder for summary pie chart -->
+        <canvas id="summaryChart" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        // Function to generate pie chart
+        function generatePieChart(elementId, labels, values, colors) {
+            var ctx = document.getElementById(elementId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    legend: {
+                        display: true
+                    },
+                    title: {
+                        display: true,
+                        text: 'Summary Pie Chart'
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the JSON data passed from Flask route
+            var summaryData = {{ summary_data|tojson }};
+            var corAns = {{ cor_ans|tojson }};
+            var topics = {{ topic|tojson }};
+            console.log("Summary data", summaryData);
+            console.log("Correct Answers", corAns);
+            console.log("Topics", topics);
+
+            // Display correct answers and corresponding topics
+            var resultsDiv = document.querySelector('.content');
+            for (var i = 0; i < corAns.length; i++) {
+                var resultItem = document.createElement('div');
+                resultItem.innerHTML = `
+                    <p>${corAns[i][0]}</p>
+                    <ul>
+                        ${corAns[i][1].map(option => `<li>${option}</li>`).join('')}
+                    </ul>
+                    <p>Correct Answer: ${corAns[i][2]}</p>
+                    <p>Concept: ${topics[i]}</p>
+                `;
+                resultsDiv.appendChild(resultItem);
+            }
+
+            // Generate the summary pie chart
+            generatePieChart("summaryChart", summaryData.labels, summaryData.values, summaryData.colors);
+        });
+    </script>
+</body>
+</html>
