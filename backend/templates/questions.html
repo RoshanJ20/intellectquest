@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions</title>
+</head>
+<body>
+    <div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <h2>Questions on {% for concept in concepts %}{{ concept }}{% if not loop.last %}, {% endif %}{% endfor %}</h2>
+    <form action="/verify" method="post">
+        {% for question in questions %}
+            <div>
+                <p>{{ question.question }}</p>
+                <input type="radio" id="option1_{{ loop.index0 }}" name="question_{{ loop.index0 }}" value="{{ question.options[0] }}">
+                <label for="option1_{{ loop.index0 }}">{{ question.options[0] }}</label><br>
+                <input type="radio" id="option2_{{ loop.index0 }}" name="question_{{ loop.index0 }}" value="{{ question.options[1] }}">
+                <label for="option2_{{ loop.index0 }}">{{ question.options[1] }}</label><br>
+                <input type="radio" id="option3_{{ loop.index0 }}" name="question_{{ loop.index0 }}" value="{{ question.options[2] }}">
+                <label for="option3_{{ loop.index0 }}">{{ question.options[2] }}</label><br>
+                <input type="radio" id="option4_{{ loop.index0 }}" name="question_{{ loop.index0 }}" value="{{ question.options[3] }}">
+                <label for="option4_{{ loop.index0 }}">{{ question.options[3] }}</label><br>
+            </div>
+        {% endfor %}
+        <button type="button" onclick="submitAnswers()">Submit Answers</button>
+    </form>
+    <script>
+        function submitAnswers() {
+            var answers = {};
+            var inputs = document.querySelectorAll('input[type="radio"]:checked');
+            inputs.forEach(function(input) {
+            // Get the question index from the name attribute
+            var questionIndex = input.name.split('_')[1];
+            // Get the answer value
+            var answer = input.value;
+            // Add the answer to the answers object with the question index as the key
+            answers[questionIndex] = answer;
+        });
+
+    // Sending the answers to the server using Axios POST request
+        axios.post('/verify', { selected_answers: answers })
+        .then(response => {
+            // Handle successful response here
+            console.log("Answers submitted successfully!", response.data);
+            window.location.href = '/results';
+            // Call function to generate pie charts if needed
+        })
+        .catch(error => {
+            // Handle errors here
+            console.error("Error submitting answers:", error);
+        });
+        }
+    </script>
+    </div>
+</body>
+</html>
