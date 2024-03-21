@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState    } from 'react';
 import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 interface Question {
   question: string;
@@ -18,10 +20,29 @@ interface QuizData {
   questions: Question[];
   answer_key: AnswerKey; // Assuming answer_key is an object with question index as key
 }
+const Questions = () => {
+  const [quizData, setQuizData] = useState(null);
+  const router = useRouter();
 
-const Questions: React.FC = () => {
-    const [quizData, setQuizData] = useState<QuizData | undefined>(undefined); // Initially undefined
+  useEffect(() => {
+      const storedQuizData = localStorage.getItem('quizData');
+      console.log(storedQuizData);
+      if (storedQuizData) {
+          setQuizData(JSON.parse(storedQuizData));
+          // Optional: Clear the stored data if it's no longer needed
+          localStorage.clear();
+      }
+  }, []);
+  if (!quizData) {
+        // If quizData is null or hasn't loaded yet, you can return a loading message or a null component
+        return <div>Loading quiz data...</div>;
+    }
+
+    console.log(quizData);
+
+
     const submitAnswers = async () => {
+
     const answers: Record<string, string> = {};
     const inputs = document.querySelectorAll('input[type="radio"]:checked');
 
@@ -31,46 +52,40 @@ const Questions: React.FC = () => {
       answers[questionIndex] = answer;
     });
 
-    try {
-      const response = await axios.post('/verify', { selected_answers: answers });
-      console.log("Answers submitted successfully!", response.data);
-      window.location.href = '/results';
+    console.log("Selected answers:", answers);
 
-      // Optionally, evaluate answers using answer_key if needed
-      // const correctAnswers = Object.entries(quizData.answer_key).filter(([index, answer]) => answers[index] === answer);
-      // console.log("Correct answers:", correctAnswers);
+    try {
+      const response = await axios.post('http://localhost:5000/verify', { selected_answers: answers });
+      if (response.statusText === "OK") {
+        // Redirect to the result page
+        console.log("Answers submitted successfully!", response.data);
+        localStorage.setItem('resultData', JSON.stringify(response.data));
+        router.push('/quiz/result');
+      }
     } catch (error) {
       console.error("Error submitting answers:", error);
     }
-  };]
+  };
   return (
     <div>
-      <h2>
-        Questions on {quizData.concepts && quizData.concepts.join(', ')}
-      </h2>
-      <form action="/verify" method="post">
+        <h2>Questions</h2>
         {quizData.questions.map((question, index) => (
-          <div key={index}>
-            <p>{question.question}</p>
-            {question.options.map((option, optionIndex) => (
-              <div key={optionIndex}>
-                <input
-                  type="radio"
-                  id={`option${optionIndex + 1}_{index}`}
-                  name={`question_${index}`}
-                  value={option}
-                />
-                <label for={`option${optionIndex + 1}_{index}`}>{option}</label>
-              </div>
-            ))}
-          </div>
+            <div key={index}>
+                <p><strong>{index + 1}. {question.question}</strong></p>
+                {question.options.map((option, optionIndex) => (
+                    <label key={optionIndex} style={{display: 'block'}}>
+                        <input
+                            type="radio"
+                            name={`question_${index}`}
+                            value={`option${optionIndex}`}
+                        /> {option}
+                    </label>
+                ))}
+            </div>
         ))}
-        <button type="button" onClick={submitAnswers}>
-          Submit Answers
-        </button>
-      </form>
+        <Button onClick={submitAnswers}>Submit Answers</Button>
     </div>
-  );
+);
 };
 
 export default Questions;

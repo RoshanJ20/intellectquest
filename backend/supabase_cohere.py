@@ -32,6 +32,7 @@ vector_store = SupabaseVectorStore(
     table_name="documents",
     query_name="match_documents",
 )
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json

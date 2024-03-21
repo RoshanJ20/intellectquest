@@ -1,8 +1,9 @@
 import { Homepage } from "@/components/component/homepage"
+import { Header } from '@/components/header'
 
 export default function Page({
   }) {
-    return <div data-theme='light'>
+    return <div>
         <Homepage />
     </div>
   }

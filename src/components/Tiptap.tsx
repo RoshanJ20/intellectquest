@@ -1,5 +1,3 @@
-'use client'
-
 import './styles.css'
 
 import { Color } from '@tiptap/extension-color'
@@ -18,7 +16,7 @@ const MenuBar = () => {
 
   return (
     <>
-      <button
+      {/* <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={
           !editor.can()
@@ -177,7 +175,7 @@ const MenuBar = () => {
         className={editor.isActive('textStyle', { color: '#958DF1' }) ? 'is-active' : ''}
       >
         purple
-      </button>
+      </button> */}
     </>
   )
 }

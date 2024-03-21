@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button';
+import  Button  from '@/components/ui/button';
 import React, {useState} from 'react';
 import axios from 'axios';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ export default function Quiz() {
             if (response.statusText === "OK") {
                 // Success handling
                 console.log(response.data);
+                localStorage.setItem('quizData', JSON.stringify(response.data));
                 router.push('/quiz/questions')
             } else {
                 // Error handling
@@ -45,7 +46,7 @@ export default function Quiz() {
                     <option value="Module 5">Module 5</option>
                     <option value="Module 6">Module 6</option>
                 </select>
-                <Button value="Start Quiz" onClick={handleStartQuiz}/>
+                <Button value="Start Quiz" onClick={handleStartQuiz}>Start Quiz</Button>
             </form> 
         </div>
     )

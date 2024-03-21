@@ -3,7 +3,7 @@
  * @see https://v0.dev/t/3Zqger0jaET
  */
 'use client'
-import { Button } from "@/components/ui/button"
+import Button from "@/components/ui/button";
 
 import React, { useState } from 'react';
 import { ResponsiveLine } from "@nivo/line";
@@ -12,90 +12,13 @@ import {redirect} from 'next/navigation'
 import Link from "next/link";
 
 
-function TextIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 6.1H3" />
-      <path d="M21 12.1H3" />
-      <path d="M15.1 18H3" />
-    </svg>
-  );
-}
-
 export function Homepage() {
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [messageHistory, setMessageHistory] = useState([]);
-
-  const toggleOverlay = () => {
-    setShowOverlay(!showOverlay);
-  };
-
-  const sendMessage = async () => {
-    if (!currentMessage.trim()) return;
-
-    const userMessage = { sender: 'user', message: currentMessage };
-    setMessageHistory([...messageHistory, userMessage]);
-
-    // Update the fetch call to point to the Flask backend
-    const response = await fetch('http://localhost:5000/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput: currentMessage }), // Make sure the key matches what Flask expects
-    });
-
-    if (response.ok) {
-      const { message } = await response.json(); // Assuming Flask returns { message: "response text" }
-      const aiMessage = { sender: 'ai', message: message };
-      setMessageHistory(prevHistory => [...prevHistory, aiMessage]);
-    } else {
-      console.error('Failed to fetch response');
-    }
-
-    setCurrentMessage('');
-  };
-
   const NoteEditor = () => {
     redirect('/NoteEditor')
   }
 
   return (
     <>
-      <header className="flex items-center justify-between w-full px-6 py-4 dark:bg-blue-900">
-        <h1 className="text-3xl font-bold dark:text-white">IntellectQuest</h1>
-        <div className="flex space-x-4">
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            <Link href="/NoteEditor">Notes</Link>
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            <Link href="/modules">Modules</Link>
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            Quizzes
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            Reports
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white dark:bg-blue-700 dark:text-white">
-            Login
-          </button>
-          <div className="avatar">
-            <div className="w-10 rounded">
-              <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-            </div>
-          </div>
-        </div>
-      </header>
       <div className="grid md:grid-cols-2 gap-4 items-start w-full px-6 py-6 dark:bg-blue-900">
         <div className="grid md:grid-cols-2 gap-4 items-start w-full max-w-7xl px-6 py-6 dark:bg-blue-900">
           <div className="space-y-6 dark:bg-blue-900">
@@ -151,11 +74,6 @@ export function Homepage() {
             <CurvedlineChart className="w-full aspect-[2/1]" />
           </div>
           <div className="grid gap-4 dark:bg-blue-900" />
-          <div className="flex justify-end">
-            <Button onClick={toggleOverlay} className="dark:text-white dark:hover:bg-blue-800" size="lg" variant="outline">
-              <TextIcon className="h-6 w-6" />
-            </Button>
-          </div>
         </div>
         <section className="grid md:grid-cols-2 gap-4 items-start w-full max-w-7xl px-6 py-6 dark:bg-blue-900">
           <div className="space-y-6 dark:bg-blue-900">
@@ -167,38 +85,7 @@ export function Homepage() {
             </div>
           </div>
         </section>
-      </div>      
-      {/* Chat Overlay */}
-      {showOverlay && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg font-bold mb-2">Chat with Us!</h2>
-            <div className="overflow-auto h-64 mb-4">
-              {messageHistory.map((msg, index) => (
-                <div key={index} className={`p-2 ${msg.sender === 'ai' ? 'text-left' : 'text-right'}`}>
-                  <span className="inline-block bg-gray-200 rounded p-2">{msg.message}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex">
-              <input
-                type="text"
-                className="border p-2 w-full rounded-l"
-                placeholder="Type your message..."
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              />
-              <button onClick={sendMessage} className="bg-blue-500 text-white p-2 rounded-r">
-                Send
-              </button>
-            </div>
-            <button onClick={toggleOverlay} className="mt-4 bg-red-500 text-white p-2 rounded">
-              Close Chat
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
     </>
   )
 }

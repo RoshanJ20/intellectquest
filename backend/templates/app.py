@@ -4,15 +4,44 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader
 from collections import defaultdict
 from flask_cors import CORS
+from langchain_community.vectorstores import SupabaseVectorStore
+from langchain_community.embeddings import CohereEmbeddings
+from langchain_community.chat_models import ChatCohere
+from supabase.client import Client, create_client
+import dotenv, os
+from langchain_community.embeddings import CohereEmbeddings
+from langchain_community.chat_models import ChatCohere
+import os, dotenv
+import cohere
+import re
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
+
+dotenv.load_dotenv()
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
+supabase: Client = create_client(supabase_url, supabase_key)
 
 
 app = Flask(__name__)
 CORS(app)
 
+API_KEY_OK = os.getenv('COHERE_API_KEY')
+cohere_chat_model = ChatCohere(cohere_api_key=API_KEY_OK)
+cohere_embeddings = CohereEmbeddings(cohere_api_key=API_KEY_OK)
+co = cohere.Client(os.getenv('COHERE_API_KEY'))
+
+vector_store = SupabaseVectorStore(
+    embedding=cohere_embeddings,
+    client=supabase,
+    table_name="documents",
+    query_name="match_documents",
+)
+
 
 # Configure GenerativeAI
-genai.configure(api_key='AIzaSyBPg0laQNUvgK87b5Y_bYjJZUUG0zBIVYg')
+genai.configure(api_key='AIzaSyAeZn2FoP4Kd0pFEQiyk8d7xd1vjjxBw0s')
 answer_key=[]
 questions = []
 concepts=[]
@@ -34,15 +63,14 @@ def generate_questions(text):
     response = model.generate_content(text+" From the above content can you generate 11 Questions from 11 different concepts with 4 options (3 Wrong options and 1 correct option) . Please send me the answer key separately with all the correct option (a or b or c) and at last give me Concepts List it is a list informing me from which Concepts the question was taken from")
     questions_with_options = []
 
+    global questions
+    global answer_key
+    global concepts
+
     # Split the response text into individual questions
     result = response.text.split('\n\n')
     print(result)
     # Iterate through each question and extract the question and options
-    global questions
-
-    global answer_key
-    global concepts
-
     current_section = None
 
     for item in result:
@@ -64,6 +92,11 @@ def generate_questions(text):
             elif current_section == "concepts":
                 concepts.extend(item.split("\n"))
 
+    if len(answer_key) > 11 and len(concepts) > 11 and len(generated_questions) > 11:
+        answer_key = answer_key[-11:]
+        concepts = concepts[-11:]
+        questions = questions[-11:]
+
     print("Questions:", questions)
     print("Answer Key:", answer_key)
     print("Concepts:", concepts)
@@ -81,9 +114,9 @@ def index():
 
         # Determine the PDF file path based on the selected module
         if selected_module == "Module 1":
-            pdf_file_path = "C:/Users/Pratheesh/Desktop/Operating Systems Support.pdf"
+            pdf_file_path = "D:\code\shlokathon\intellectquest\\backend\\templates\\Arraye.pdf"
         elif selected_module == "Module 2":
-            pdf_file_path = "C:/Users/Pratheesh/Desktop/Operating Systems Support.pdf"
+            pdf_file_path = "D:\code\shlokathon\intellectquest\\backend\\templates\\Arraye.pdf"
         # Add more conditions for other modules if needed
         print(selected_module)
         # Check if a PDF file path is determined
@@ -92,6 +125,7 @@ def index():
             pdf_text = read_pdf(pdf_file_path)
             # Generate questions from PDF text
             generated_questions, concepts, answer_key = generate_questions(pdf_text)
+ 
             # Render the questions.html template with the generated questions, concepts, and answer key
             return jsonify(questions=generated_questions, concepts=concepts,
                                    answer_key=answer_key)
@@ -103,20 +137,45 @@ def index():
 
 from collections import defaultdict
 
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.json
+    user_input = data.get('userInput')
+    matched_docs = vector_store.similarity_search(user_input)
+    page_content = matched_docs[0].page_content
+    sections = re.split(r'\n-{2,}\n', page_content)
+    docs = []
+    for section in sections:
+        lines = section.strip().split('\n')
+        title = lines[0].strip()
+        snippet = '\n'.join(lines[1:]).strip()
+        docs.append({"title": title, "snippet": snippet})
+
+    response = co.chat(
+            message=user_input,
+            documents = docs
+            )
+    print(response.text)
+    return jsonify({"message": response.text})
+
 @app.route('/verify', methods=['POST'])
 def verify():
     data = request.get_json()
     selected_answers = data.get('selected_answers', {})
     print("selected_answers: ",selected_answers)
 
-    def get_option_letter(text):
-        start_index = text.find("(") + 1  # Skip the opening parenthesis
-        end_index = text.rfind(")")  # Use rfind for the last closing parenthesis
-        if start_index != -1 and end_index != -1 and start_index < end_index:
-            option_letter = text[start_index].strip()  # Extract and strip leading/trailing spaces
-            if option_letter.isalpha() and len(option_letter) == 1:  # Check for single letter
-                return option_letter
-        return None
+    selected_options = {}
+    for key, value in selected_answers.items():
+        if value == "option0":
+            selected_options[key] = 'a'
+        elif value == "option1":
+            selected_options[key] = 'b'
+        elif value == "option2":
+            selected_options[key] = 'c'
+        elif value == "option3":
+            selected_options[key] = 'd'
+
+    selected_answers = selected_options
 
     def add_first_alphabet_to_list(strings):
         first_alphabets = []
@@ -126,17 +185,20 @@ def verify():
                     first_alphabets.append(char.lower())
                     break  # Stop searching once the first alphabet is found
         return first_alphabets
+    
     ans = []
     global cor_ans
     global topic
     sel = []
 
     for text in selected_answers.values():
-        option_letter = get_option_letter(text)
-        if option_letter:
-            sel.append(option_letter)
+        if text:
+            sel.append(text)
+    
+    print("answerkey",answer_key)
     ans=add_first_alphabet_to_list(answer_key)
-    print(sel, ans)
+    print("answerkey",ans)
+    print('sel',sel)
     cor = []
     for i in range(len(sel)-1):
         if sel[i] == ans[i]:
@@ -153,19 +215,13 @@ def verify():
     na.append(cor.count(1))
     na.append(cor.count(0))
     print(na)
-        # Return a response indicating success or any relevant data
-    return jsonify({"message": "Verification successful", "selected_options": dict(selected_answers)})
-@app.route('/results', methods=['GET'])
-def results():
-    # Assume summary_data is defined and contains valid JSON data
+
     summary_data = {
         "labels": ["Correct", "Incorrect"],
         "values": na,
         "colors": ["Blue", "Red"]
     }
-
-    # Render the template with the summary_data
-    return render_template('results.html', summary_data=summary_data, cor_ans=cor_ans, topic=topic)
+    return jsonify(summary_data=summary_data, cor_ans=cor_ans, topic=topic)
 
 if __name__ == '__main__':
     app.run(debug=True)
