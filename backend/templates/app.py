@@ -39,9 +39,8 @@ vector_store = SupabaseVectorStore(
     query_name="match_documents",
 )
 
-
 # Configure GenerativeAI
-genai.configure(api_key='AIzaSyAeZn2FoP4Kd0pFEQiyk8d7xd1vjjxBw0s')
+genai.configure(api_key=os.getenv('GEM_API_KEY'))
 answer_key=[]
 questions = []
 concepts=[]
